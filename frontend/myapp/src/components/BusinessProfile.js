@@ -1,3 +1,4 @@
+
 // import React, { useState, useEffect } from 'react';
 // import axios from 'axios';
 
@@ -20,13 +21,21 @@
 //     fetchUsers();
 //   }, []);
 
+//   const handleUserSelect = (userId) => {
+//     const updatedSelectedUsers = selectedUsers.includes(userId)
+//       ? selectedUsers.filter(id => id !== userId)
+//       : [...selectedUsers, userId];
+//     setSelectedUsers(updatedSelectedUsers);
+//   };
+
 //   const handleSubmit = async (e) => {
 //     e.preventDefault();
 //     // Submit ad with selected users
 //     try {
-//       await axios.post('/api/business/create-ad', {
+//       await axios.post('http://localhost:5000/api/business/create-ad', {
 //         adContent,
 //         targets: selectedUsers,
+//         createdBy: user._id, 
 //       });
 //       // Reset form fields
 //       setAdContent('');
@@ -34,6 +43,7 @@
 //     } catch (error) {
 //       console.error(error);
 //     }
+//     console.log(selectedUsers);
 //   };
 
 //   return (
@@ -51,12 +61,19 @@
 //               <input type="text" className="form-control" id="adContent" value={adContent} onChange={(e) => setAdContent(e.target.value)} />
 //             </div>
 //             <div className="mb-3">
-//               <label htmlFor="selectedUsers" className="form-label">Select Users</label>
-//               <select multiple className="form-control" id="selectedUsers" value={selectedUsers} onChange={(e) => setSelectedUsers(Array.from(e.target.selectedOptions, option => option.value))}>
-//                 {users.map(user => (
-//                   <option key={user._id} value={user._id}>{user.email}</option>
-//                 ))}
-//               </select>
+//               <label className="form-label">Select Users</label>
+//               {users.map(user => (
+//                 <div key={user._id} className="form-check">
+//                   <input
+//                     type="checkbox"
+//                     className="form-check-input"
+//                     id={user._id}
+//                     checked={selectedUsers.includes(user._id)}
+//                     onChange={() => handleUserSelect(user._id)}
+//                   />
+//                   <label className="form-check-label" htmlFor={user._id}>{user.email}</label>
+//                 </div>
+//               ))}
 //             </div>
 //             <button type="submit" className="btn btn-primary">Create Ad</button>
 //           </form>
@@ -72,11 +89,12 @@ import axios from 'axios';
 
 const BusinessProfile = ({ user }) => {
   const [adContent, setAdContent] = useState('');
+  const [imageUrl, setImageUrl] = useState('');
   const [users, setUsers] = useState([]);
   const [selectedUsers, setSelectedUsers] = useState([]);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    // Fetch list of all users from MongoDB
     const fetchUsers = async () => {
       try {
         const res = await axios.get('http://localhost:5000/api/users');
@@ -96,22 +114,51 @@ const BusinessProfile = ({ user }) => {
     setSelectedUsers(updatedSelectedUsers);
   };
 
+  const handleImageUpload = async (e) => {
+    setLoading(true);
+    const file = e.target.files[0];
+    
+    if (file.type === "image/jpeg" || file.type === "image/png") {
+      const data = new FormData();
+      data.append("file", file);
+      data.append("upload_preset", "chat-app"); // Your Cloudinary upload preset
+      data.append("cloud_name", "dwflnxe8b"); // Your Cloudinary cloud name
+      
+      try {
+        const response = await fetch("https://api.cloudinary.com/v1_1/dwflnxe8b/image/upload", {
+          method: "POST",
+          body: data,
+        });
+        const responseData = await response.json();
+        setImageUrl(responseData.url);
+        setLoading(false);
+        console.log(responseData.url);
+      } catch (error) {
+        console.error(error);
+        setLoading(false);
+      }
+    } else {
+      // Handle invalid file type
+      setLoading(false);
+      console.log("Invalid file type");
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-    // Submit ad with selected users
     try {
       await axios.post('http://localhost:5000/api/business/create-ad', {
         adContent,
+        imageUrl,
         targets: selectedUsers,
-        createdBy: user._id, 
+        createdBy: user._id
       });
-      // Reset form fields
       setAdContent('');
+      setImageUrl('');
       setSelectedUsers([]);
     } catch (error) {
       console.error(error);
     }
-    console.log(selectedUsers);
   };
 
   return (
@@ -128,6 +175,12 @@ const BusinessProfile = ({ user }) => {
               <label htmlFor="adContent" className="form-label">Ad Content</label>
               <input type="text" className="form-control" id="adContent" value={adContent} onChange={(e) => setAdContent(e.target.value)} />
             </div>
+            <div className="mb-3">
+              <label htmlFor="image" className="form-label">Image</label>
+              <input type="file" className="form-control" id="image" onChange={handleImageUpload} />
+            </div>
+            {loading && <p>Loading...</p>}
+            {imageUrl && <img src={imageUrl} alt="Uploaded" style={{ maxWidth: '100%', height: 'auto' }} />}
             <div className="mb-3">
               <label className="form-label">Select Users</label>
               {users.map(user => (
@@ -152,3 +205,4 @@ const BusinessProfile = ({ user }) => {
 };
 
 export default BusinessProfile;
+
