@@ -2,10 +2,13 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import Cookies from 'js-cookie';
+import { useNavigate } from 'react-router-dom';
+
 
 const ViewerProfile = ({ user }) => {
   const [ads, setAds] = useState([]);
   const [userEmails, setUserEmails] = useState({});
+  const navigate=useNavigate();
   useEffect(() => {
     const fetchAds = async () => {
       try {
@@ -38,6 +41,7 @@ const ViewerProfile = ({ user }) => {
         console.error(error);
       }
     };
+    fetchUserEmails();
 
     fetchAds();
   }, []);
@@ -50,11 +54,15 @@ const ViewerProfile = ({ user }) => {
     return userEmails[userId] || 'Unknown';
   };
 
-
+  const handleLogout = () => {
+    Cookies.remove('token');
+    navigate('/');
+  };
   return (
-    <div className="container mt-4">
-    <div className="card">
-      <div className="card-header bg-success">
+    <div style={{background: 'linear-gradient(to bottom, #87CEEB, #FFFFFF)'}}>
+    <div className="container " style={{paddingTop:"60px"}} >
+    <div className="card ">
+      <div className="card-header bg-primary">
         <h2 className="card-title "style={{ color: 'white' }}>Viewer Profile</h2>
       </div>
       <div className="card-body">
@@ -68,13 +76,18 @@ const ViewerProfile = ({ user }) => {
               <div className="card-body">
                 <p className="card-text">{ad.content}</p>
                 <p className="card-text">Ad made by :{findEmail(ad.createdBy)}</p>
-                <button className="btn btn-danger" onClick={() => handleDeleteAd(ad._id)}>Delete</button>
+               <div > <button className="btn btn-warning"  style={{marginBottom:"10px"}} onClick={() => handleDeleteAd(ad._id) }>Delete</button>
+              </div>
               </div>
             </div>
           ))}
         </div>
+        <br></br>
+        <button className="btn btn-danger" style={{marginLeft:"10px"}} onClick={handleLogout}>Logout</button>
       </div>
+     
     </div>
+  </div>
   </div>
   );
 };

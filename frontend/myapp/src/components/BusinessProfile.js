@@ -86,6 +86,10 @@
 // export default BusinessProfile;
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
+import Cookies from 'js-cookie';
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const BusinessProfile = ({ user }) => {
   const [adContent, setAdContent] = useState('');
@@ -93,12 +97,14 @@ const BusinessProfile = ({ user }) => {
   const [users, setUsers] = useState([]);
   const [selectedUsers, setSelectedUsers] = useState([]);
   const [loading, setLoading] = useState(false);
-
+  const navigate=useNavigate();
   useEffect(() => {
     const fetchUsers = async () => {
       try {
         const res = await axios.get('http://localhost:5000/api/users');
-        setUsers(res.data);
+        const viewerArray=res.data.filter((u) => (u.type!=='business'));
+        
+        setUsers(viewerArray);
       } catch (error) {
         console.error(error);
       }
@@ -118,7 +124,7 @@ const BusinessProfile = ({ user }) => {
     setLoading(true);
     const file = e.target.files[0];
     
-    if (file.type === "image/jpeg" || file.type === "image/png") {
+    if (file.type === "image/jpeg" || file.type === "image/png"||file.type==="image/jpg") {
       const data = new FormData();
       data.append("file", file);
       data.append("upload_preset", "chat-app"); // Your Cloudinary upload preset
@@ -153,6 +159,7 @@ const BusinessProfile = ({ user }) => {
         targets: selectedUsers,
         createdBy: user._id
       });
+      toast.success('Ad created and sent successfully!');
       setAdContent('');
       setImageUrl('');
       setSelectedUsers([]);
@@ -160,12 +167,17 @@ const BusinessProfile = ({ user }) => {
       console.error(error);
     }
   };
+  const handleLogout = () => {
+    Cookies.remove('token');
+    navigate('/');
+  };
 
   return (
-    <div className="container mt-4">
+    <div style={{background: 'linear-gradient(to bottom, #87CEEB, #FFFFFF)'}}>
+    <div className="container " style={{paddingTop:"60px"}} >
       <div className="card">
         <div className="card-header bg-warning">
-          <h2 className="card-title">Business Profile</h2>
+          <h2 className="card-title" style={{color:"white"}}>Business Profile</h2>
         </div>
         <div className="card-body">
           <p className="card-text">ID: {user._id}</p>
@@ -182,7 +194,7 @@ const BusinessProfile = ({ user }) => {
             {loading && <p>Loading...</p>}
             {imageUrl && <img src={imageUrl} alt="Uploaded" style={{ maxWidth: '100%', height: 'auto' }} />}
             <div className="mb-3">
-              <label className="form-label">Select Users</label>
+              <label className="form-label">Select Target Viewers!</label>
               {users.map(user => (
                 <div key={user._id} className="form-check">
                   <input
@@ -197,9 +209,14 @@ const BusinessProfile = ({ user }) => {
               ))}
             </div>
             <button type="submit" className="btn btn-primary">Create Ad</button>
+            <br></br> <br></br>
+            <button className="btn btn-danger" onClick={handleLogout}>Logout</button>
           </form>
+          
         </div>
       </div>
+    </div>
+    
     </div>
   );
 };
