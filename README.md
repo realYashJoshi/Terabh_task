@@ -7,6 +7,8 @@ View Live Deployed Version Here: https://terabh-intelligence.onrender.com
 
 3)Proceed to build appropriate mongoDB models for ads referencing to users,developed routes for fetching ads and creating ads, validated them using POSTMAN API.
 
-4)Proceeded to frontend to build viewerProfiles and BusinessProfile pages,made forms and integrated Axios in frontend.
+4)Here appropriate controllers were created to design logic for targeting ads to one or more specific groups of users and also fetching these ads appropriately.
 
-5)Proceed to build it and deployed it on Render.
+5)Proceeded to frontend to build viewerProfiles and BusinessProfile pages,made forms and integrated Axios in frontend.
+
+6)Proceed to build it and deployed it on Render.
